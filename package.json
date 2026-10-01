@@ -1,0 +1,43 @@
+{
+  "name": "devbox-client",
+  "version": "0.1.0",
+  "description": "Linux desktop client for Microsoft Dev Box (Entra ID + FreeRDP)",
+  "main": "src/main.js",
+  "license": "MIT",
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder --linux deb",
+    "dist:linux": "electron-builder --linux deb",
+    "dist:win": "electron-builder --win nsis"
+  },
+  "build": {
+    "appId": "local.devbox.client",
+    "productName": "Dev Box",
+    "linux": {
+      "target": [
+        "deb"
+      ],
+      "category": "Network",
+      "depends": [
+        "freerdp3-sdl | freerdp3-x11"
+      ]
+    },
+    "win": {
+      "target": [
+        "nsis"
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
+    }
+  },
+  "dependencies": {
+    "@azure/msal-node": "^7.0.0",
+    "fast-xml-parser": "^5.11.2"
+  },
+  "devDependencies": {
+    "electron": "^44.5.1",
+    "electron-builder": "^26.15.3"
+  }
+}

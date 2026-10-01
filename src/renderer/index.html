@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'" />
+    <title>Dev Box</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header>
+      <h1>Dev Box</h1>
+      <div class="header-actions">
+        <button id="refresh" class="icon" title="Refresh" hidden>⟳</button>
+        <button id="open-settings" class="icon" title="Settings">⚙</button>
+      </div>
+    </header>
+
+    <main>
+      <div id="banner" class="banner" hidden></div>
+      <section id="signed-out" hidden>
+        <div class="hero">
+          <p class="lead">Connect to your Microsoft Dev Box from Linux.</p>
+          <button id="sign-in" class="primary">Sign in with Microsoft</button>
+          <p class="muted small">Uses your organization's Entra ID account.</p>
+        </div>
+      </section>
+
+      <section id="signed-in" hidden>
+        <div id="boxes"></div>
+        <p id="empty" class="muted center" hidden>No Dev Boxes found for your account.</p>
+        <p id="loading" class="muted center" hidden>Loading Dev Boxes…</p>
+      </section>
+    </main>
+
+    <footer>
+      <div id="account" class="muted small"></div>
+      <div class="footer-actions">
+        <button id="toggle-log" class="link small">Diagnostics</button>
+        <button id="sign-out" class="link small" hidden>Sign out</button>
+      </div>
+    </footer>
+
+    <aside id="log-panel" hidden>
+      <div class="log-head">
+        <strong>Diagnostics</strong>
+        <span>
+          <button id="copy-log" class="link small">Copy</button>
+          <button id="close-log" class="link small">Close</button>
+        </span>
+      </div>
+      <pre id="log"></pre>
+    </aside>
+
+    <dialog id="settings">
+      <form method="dialog" id="settings-form">
+        <h2>Settings</h2>
+        <label>Tenant <small>(tenant ID, domain or "organizations")</small><input name="tenant" /></label>
+        <label>Dev Center endpoints <small>(comma separated; empty = auto-discover)</small>
+          <input name="devCenterEndpoints" placeholder="https://<tenant>-<devcenter>.<region>.devcenter.azure.com" /></label>
+        <label>Dev Center API version<input name="devCenterApiVersion" /></label>
+        <label class="check"><input type="checkbox" name="sessionPrompt" /> Show session settings before connecting</label>
+        <label>FreeRDP binary <small>(empty = auto-detect)</small><input name="freerdpPath" placeholder="xfreerdp3" /></label>
+        <label>FreeRDP extra arguments<input name="freerdpArgs" /></label>
+        <details>
+          <summary>Advanced (auth clients &amp; feed)</summary>
+          <label>Azure client ID<input name="azureClientId" /></label>
+          <label>Azure redirect URI<input name="azureRedirectUri" /></label>
+          <label>Remote Desktop client ID<input name="rdClientId" /></label>
+          <label>Remote Desktop redirect URI<input name="rdRedirectUri" /></label>
+          <label>AVD feed URLs <small>(comma separated)</small><input name="feedUrls" /></label>
+        </details>
+        <div class="dialog-actions">
+          <button type="button" id="reset-settings" class="link">Reset to defaults</button>
+          <span>
+            <button value="cancel" formnovalidate>Cancel</button>
+            <button value="save" class="primary">Save</button>
+          </span>
+        </div>
+      </form>
+    </dialog>
+
+    <dialog id="session-dialog">
+      <form method="dialog" id="session-form">
+        <h2 class="center-text">In Session Settings</h2>
+        <p class="muted center-text small">Select the devices or features your Dev Box can use.</p>
+        <p id="session-status" class="muted center-text small"></p>
+        <div class="check-grid">
+          <label class="check"><input type="checkbox" name="clipboard" /> Clipboard</label>
+          <label class="check"><input type="checkbox" name="printer" /> Printer</label>
+          <label class="check"><input type="checkbox" name="microphone" /> Microphone</label>
+          <label class="check"><input type="checkbox" name="camera" /> Camera</label>
+          <label class="check"><input type="checkbox" name="sound" /> Sound</label>
+          <label class="check"><input type="checkbox" name="location" /> Location</label>
+          <label class="check"><input type="checkbox" name="smartcards" /> Smart cards</label>
+        </div>
+        <div class="usb-section">
+          <div class="usb-head">USB devices <small class="muted">(passed through whole; not usable on Linux while connected)</small></div>
+          <div id="usb-list" class="small"></div>
+          <div id="usb-fix" hidden>
+            <p class="small muted">FreeRDP needs access to this device. Run once in a terminal, then re-plug it:</p>
+            <pre id="usb-cmd"></pre>
+            <button type="button" id="usb-copy">Copy command</button>
+            <button type="button" id="usb-recheck">Re-check</button>
+          </div>
+        </div>
+        <div class="row">
+          <span>File transfer <small class="muted">(local folders as \\tsclient; also enables copy/paste of files)</small></span>
+          <select name="drives">
+            <option value="none">Off</option>
+            <option value="home">Home folder</option>
+            <option value="all">Home + all drives</option>
+          </select>
+        </div>
+        <label class="row"><span>Keyboard shortcuts <small class="muted">(Alt+Tab etc. go to the Dev Box)</small></span><input type="checkbox" class="switch" name="keyboardShortcuts" /></label>
+        <label class="row"><span>Full screen <small class="muted">(Ctrl+Alt+Enter toggles)</small></span><input type="checkbox" class="switch" name="fullscreen" /></label>
+        <label class="row"><span>Multiple displays</span><input type="checkbox" class="switch" name="multimon" /></label>
+        <div class="dialog-actions">
+          <label class="check small"><input type="checkbox" name="dontShow" /> Don't show again</label>
+          <span>
+            <button value="cancel" formnovalidate>Cancel</button>
+            <button value="go" class="primary" id="session-go">Connect</button>
+          </span>
+        </div>
+      </form>
+    </dialog>
+
+    <template id="box-template">
+      <article class="box">
+        <div class="box-main">
+          <div>
+            <h2 class="box-name"></h2>
+            <div class="box-meta muted small"></div>
+          </div>
+          <div class="status"><span class="dot"></span><span class="status-text"></span></div>
+        </div>
+        <div class="box-specs muted small"></div>
+        <div class="box-error small" hidden></div>
+        <div class="box-actions">
+          <button class="primary act-main"></button>
+          <button class="act-web" title="Open the Windows 365 web client in the app">Web</button>
+          <div class="menu">
+            <button class="act-more" title="More actions">⋯</button>
+            <div class="menu-items" hidden>
+              <button data-verb="start">Start</button>
+              <button data-verb="restart">Restart</button>
+              <button data-verb="hibernate">Hibernate</button>
+              <button data-verb="stop">Shut down</button>
+              <button data-verb="session">Session settings…</button>
+              <button data-verb="web">Open web client</button>
+              <button data-verb="browser">Open in system browser</button>
+            </div>
+          </div>
+        </div>
+      </article>
+    </template>
+
+    <script src="app.js"></script>
+  </body>
+</html>
