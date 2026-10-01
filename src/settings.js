@@ -23,6 +23,8 @@ const DEFAULTS = {
   ].join(','),
   freerdpPath: '',
   freerdpArgs: '/dynamic-resolution',
+  // Windows only: explicit path to msrdc.exe (empty = look in the usual install locations).
+  msrdcPath: '',
   // Per-connection device/feature redirection, shown in the "In Session Settings" dialog.
   sessionPrompt: true,
   // "<project>/<devbox>" -> features blocked by a policy on the Dev Box itself

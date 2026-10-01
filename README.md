@@ -1,13 +1,16 @@
-# Dev Box client for Linux
+# Dev Box client
 
 Electron app that lists your Microsoft Dev Boxes, starts/stops them, and connects
-with FreeRDP 3 using Entra ID, with no tenant admin rights or app registration needed.
+using Entra ID, with no tenant admin rights or app registration needed. On Linux it
+connects with FreeRDP 3; on Windows it hands the session to the Remote Desktop
+client (`msrdc.exe`) or the Windows App (`ms-avd:` URI).
 
 ```
-sudo apt install freerdp3-sdl     # native Wayland client; freerdp3-x11 also works on X11
+sudo apt install freerdp3-sdl     # Linux: native Wayland client; freerdp3-x11 also works on X11
 npm install
-npm start          # run
-npm run dist       # build a .deb into dist/
+npm start            # run
+npm run dist:linux   # build a .deb into dist/
+npm run dist:win     # build a Windows NSIS installer into dist/ (run on Windows)
 ```
 
 ## How it works
@@ -19,7 +22,8 @@ npm run dist       # build a .deb into dist/
 | 3. List / start / stop | Dev Center data plane `GET /users/me/devboxes` etc. | Azure CLI → `devcenter.azure.com` |
 | 4. Connection info | `.../devboxes/{name}/remoteConnection` → `ms-avd:connect?workspaceId=…&resourceid=…` | Azure CLI |
 | 5. .rdp file | `rdweb.wvd.microsoft.com/api/arm/feeddiscovery/tenants/{workspaceId}/rdps/{resourceId}.rdp` (as the Windows 365 web client does), feed search as fallback | Remote Desktop `a85cf173-4192-…` (same as FreeRDP) → `www.wvd.microsoft.com` |
-| 6. Connect | `xfreerdp3 <file>.rdp`; FreeRDP's ARM gateway + RDS AAD auth prompts ("Browse to: …") are answered by our sign-in window and fed to its stdin | Remote Desktop client (FreeRDP's own) |
+| 6. Connect (Linux) | `xfreerdp3 <file>.rdp`; FreeRDP's ARM gateway + RDS AAD auth prompts ("Browse to: …") are answered by our sign-in window and fed to its stdin | Remote Desktop `a85cf173-…` (FreeRDP's own) |
+| 6. Connect (Windows) | `msrdc.exe <file>.rdp` (session options from step 5 still apply), or Windows App via the `ms-avd:` URI from step 4 when msrdc is not installed | the client's own Entra auth |
 
 All sign-in windows share one cookie jar, so after the first login the other
 flows normally complete invisibly via SSO. Tokens are cached in

@@ -54,10 +54,11 @@ function createWindow() {
 }
 
 handle('app:init', async () => {
-  const freerdp = rdp.findFreeRdp();
-  if (freerdp) log.info(`rdp: using ${freerdp.bin} ${freerdp.version}`);
+  const client = rdp.findClient();
+  if (client) log.info(`rdp: using ${client.bin || client.kind}${client.version ? ` ${client.version}` : ''}`);
+  else if (process.platform === 'win32') log.warn('rdp: no Remote Desktop client found (install "Windows App" from the Microsoft Store)');
   else log.warn('rdp: FreeRDP 3 not found (sudo apt install freerdp3-x11)');
-  return { account: await auth.currentAccount(), freerdp };
+  return { account: await auth.currentAccount(), freerdp: client, platform: process.platform };
 });
 
 handle('auth:signIn', () => auth.signIn(win));
@@ -101,6 +102,12 @@ handle('devbox:connect', async (box) => {
   const key = keyOf(box);
   rdp.events.emit('state', key, 'preparing');
   try {
+    // Windows App consumes the ms-avd: URI itself - no .rdp download needed.
+    if (rdp.findClient()?.kind === 'windows-app') {
+      const conn = await devcenter.remoteConnection(box, { parent: win });
+      await rdp.openWithWindowsApp(key, conn?.rdpConnectionUrl);
+      return;
+    }
     const file = await downloadRdp(box);
     rdp.connect(key, file, { parent: win, title: `Dev Box – ${box.name}`, blocked: policyBlocks(box) });
   } catch (e) {

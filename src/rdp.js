@@ -8,11 +8,14 @@
 const fs = require('fs');
 const { spawn, execFileSync } = require('child_process');
 const { EventEmitter } = require('events');
-const { dialog } = require('electron');
+const { dialog, shell } = require('electron');
 const settings = require('./settings');
 const { captureRedirect } = require('./authwindow');
 const usb = require('./usb');
 const log = require('./log');
+
+const IS_WIN = process.platform === 'win32';
+const winrdp = IS_WIN ? require('./winrdp') : null;
 
 // On Wayland prefer the SDL client: xfreerdp runs under XWayland, where the
 // clipboard hand-off between FreeRDP and the compositor is unreliable.
@@ -38,6 +41,13 @@ function findFreeRdp() {
     if (v) log.warn(`rdp: ${bin} is FreeRDP ${v.join('.')}, need 3.x for Dev Box (AVD gateway + Entra auth)`);
   }
   return null;
+}
+
+/** The platform's RDP client: FreeRDP on Linux, msrdc / Windows App on Windows. */
+function findClient() {
+  if (IS_WIN) return winrdp.findClient();
+  const found = findFreeRdp();
+  return found ? { kind: 'freerdp', ...found } : null;
 }
 
 // Split the args setting like a shell would for simple quoting.
@@ -134,14 +144,17 @@ const events = new EventEmitter();
 
 function connect(key, rdpFile, { parent, title, blocked = [] } = {}) {
   if (sessions.has(key)) throw new Error('Already connected');
-  const found = findFreeRdp();
-  if (!found) throw new Error('FreeRDP 3 not found. Install it with: sudo apt install freerdp3-sdl');
 
   const s = settings.load();
   const original = fs.readFileSync(rdpFile, 'utf8');
   const session = effectiveSession(s.session, rdpCapabilities(original), blocked);
   fs.writeFileSync(rdpFile, applySessionToRdp(original, session), { mode: 0o600 });
   log.info(`rdp: session options ${JSON.stringify(session)}`);
+
+  if (IS_WIN) return connectMsrdc(key, rdpFile);
+
+  const found = findFreeRdp();
+  if (!found) throw new Error('FreeRDP 3 not found. Install it with: sudo apt install freerdp3-sdl');
   const args = [
     rdpFile,
     // Floating toolbar (minimize / restore / close) whenever the session is full screen;
@@ -244,6 +257,41 @@ function connect(key, rdpFile, { parent, title, blocked = [] } = {}) {
   });
 }
 
+// Windows: hand the session-adjusted .rdp to msrdc.exe, which has its own
+// Entra auth, certificate and session UI - we only track the process.
+function connectMsrdc(key, rdpFile) {
+  const client = winrdp.findClient();
+  if (client?.kind !== 'msrdc') throw new Error(winrdp.INSTALL_HINT);
+  log.info(`rdp: ${client.bin} ${rdpFile}`);
+  const child = spawn(client.bin, [rdpFile], { stdio: 'ignore' });
+  sessions.set(key, child);
+  events.emit('state', key, 'connecting');
+  // msrdc exposes no connection events; if it is still alive after a few
+  // seconds the session window is up (auth prompts included).
+  const settle = setTimeout(() => sessions.has(key) && events.emit('state', key, 'connected'), 5000);
+  child.on('error', (e) => {
+    clearTimeout(settle);
+    sessions.delete(key);
+    log.error('rdp: msrdc spawn failed', e.message);
+    events.emit('state', key, 'disconnected');
+  });
+  child.on('exit', (code) => {
+    clearTimeout(settle);
+    sessions.delete(key);
+    log.info(`rdp: session ${key} exited (code=${code})`);
+    events.emit('state', key, 'disconnected', code);
+  });
+}
+
+/** Windows App has no .rdp interface; launch it through the box's ms-avd: URI. */
+async function openWithWindowsApp(key, avdUri) {
+  if (!avdUri || !avdUri.startsWith('ms-avd:')) throw new Error('This Dev Box did not return an ms-avd connection URL');
+  log.info(`rdp: opening Windows App for ${avdUri.split('?')[0]}`);
+  await shell.openExternal(avdUri);
+  // The session lives in Windows App; we cannot observe it, so reset the UI.
+  events.emit('state', key, 'disconnected');
+}
+
 function disconnect(key) {
   sessions.get(key)?.kill('SIGTERM');
 }
@@ -252,4 +300,4 @@ function disconnectAll() {
   for (const c of sessions.values()) c.kill('SIGTERM');
 }
 
-module.exports = { connect, disconnect, disconnectAll, findFreeRdp, events, isConnected: (k) => sessions.has(k), applySessionToRdp, sessionArgs, rdpCapabilities };
+module.exports = { connect, disconnect, disconnectAll, findFreeRdp, findClient, openWithWindowsApp, events, isConnected: (k) => sessions.has(k), applySessionToRdp, sessionArgs, rdpCapabilities };

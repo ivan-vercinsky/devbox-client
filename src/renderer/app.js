@@ -414,6 +414,11 @@ document.addEventListener('click', () => document.querySelectorAll('.menu-items'
   const info = await run(() => api.init());
   state.account = info?.account || null;
   render();
-  if (!info?.freerdp) showError('FreeRDP 3 was not found. Install it with:  sudo apt install freerdp3-x11');
+  if (!info?.freerdp)
+    showError(
+      info?.platform === 'win32'
+        ? 'No Remote Desktop client was found. Install "Windows App" from the Microsoft Store.'
+        : 'FreeRDP 3 was not found. Install it with:  sudo apt install freerdp3-x11'
+    );
   if (state.account) refresh();
 })();

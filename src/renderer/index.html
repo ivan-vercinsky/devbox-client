@@ -59,8 +59,9 @@
           <input name="devCenterEndpoints" placeholder="https://<tenant>-<devcenter>.<region>.devcenter.azure.com" /></label>
         <label>Dev Center API version<input name="devCenterApiVersion" /></label>
         <label class="check"><input type="checkbox" name="sessionPrompt" /> Show session settings before connecting</label>
-        <label>FreeRDP binary <small>(empty = auto-detect)</small><input name="freerdpPath" placeholder="xfreerdp3" /></label>
+        <label>FreeRDP binary <small>(Linux; empty = auto-detect)</small><input name="freerdpPath" placeholder="xfreerdp3" /></label>
         <label>FreeRDP extra arguments<input name="freerdpArgs" /></label>
+        <label>msrdc.exe path <small>(Windows; empty = auto-detect)</small><input name="msrdcPath" placeholder="C:\Program Files\Remote Desktop\msrdc.exe" /></label>
         <details>
           <summary>Advanced (auth clients &amp; feed)</summary>
           <label>Azure client ID<input name="azureClientId" /></label>
