@@ -4,6 +4,11 @@
   "description": "Linux desktop client for Microsoft Dev Box (Entra ID + FreeRDP)",
   "main": "src/main.js",
   "license": "MIT",
+  "author": {
+    "name": "Ivan",
+    "email": "bym666@gmail.com"
+  },
+  "homepage": "https://github.com/",
   "scripts": {
     "start": "electron .",
     "dist": "electron-builder --linux deb",
@@ -17,8 +22,19 @@
       "target": [
         "deb"
       ],
-      "category": "Network",
+      "category": "Network"
+    },
+    "deb": {
       "depends": [
+        "libgtk-3-0",
+        "libnotify4",
+        "libnss3",
+        "libxss1",
+        "libxtst6",
+        "xdg-utils",
+        "libatspi2.0-0",
+        "libuuid1",
+        "libsecret-1-0",
         "freerdp3-sdl | freerdp3-x11"
       ]
     },
