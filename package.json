@@ -8,7 +8,11 @@
     "name": "Ivan",
     "email": "bym666@gmail.com"
   },
-  "homepage": "https://github.com/",
+  "homepage": "https://github.com/ivan-vercinsky/devbox-client",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ivan-vercinsky/devbox-client.git"
+  },
   "scripts": {
     "start": "electron .",
     "dist": "electron-builder --linux deb",
