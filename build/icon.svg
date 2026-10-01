@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- App icon: isometric box in Fluent-style blues with a terminal prompt (inspired by the Microsoft Dev Box logo, drawn from scratch). Rendered to icon.png by scripts/render-icon.js -->
+  <defs>
+    <linearGradient id="top" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#b8ddff"/>
+      <stop offset="1" stop-color="#5fb2f6"/>
+    </linearGradient>
+    <linearGradient id="left" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#2d8be2"/>
+      <stop offset="1" stop-color="#0f6cbd"/>
+    </linearGradient>
+    <linearGradient id="right" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#0e62b0"/>
+      <stop offset="1" stop-color="#084a8c"/>
+    </linearGradient>
+  </defs>
+
+  <!-- left face -->
+  <polygon points="96,188 256,280 256,452 96,360" fill="url(#left)"
+           stroke="#0f6cbd" stroke-width="6" stroke-linejoin="round"/>
+  <!-- right face -->
+  <polygon points="256,280 416,188 416,360 256,452" fill="url(#right)"
+           stroke="#084a8c" stroke-width="6" stroke-linejoin="round"/>
+  <!-- top face -->
+  <polygon points="256,96 416,188 256,280 96,188" fill="url(#top)"
+           stroke="#8ec7f9" stroke-width="6" stroke-linejoin="round"/>
+
+  <!-- seam where the lid tape would run -->
+  <polyline points="176,142 336,234" fill="none" stroke="#ffffff" stroke-opacity="0.45"
+            stroke-width="10" stroke-linecap="round"/>
+
+  <!-- terminal prompt >_ on the right face -->
+  <g stroke="#ffffff" stroke-width="22" stroke-linecap="round" stroke-linejoin="round" fill="none">
+    <polyline points="294,296 332,328 294,360"/>
+    <line x1="352" y1="362" x2="390" y2="362"/>
+  </g>
+</svg>

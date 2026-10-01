@@ -1,7 +1,7 @@
 {
   "name": "devbox-client",
   "version": "0.1.0",
-  "description": "Linux desktop client for Microsoft Dev Box (Entra ID + FreeRDP)",
+  "description": "Microsoft Dev Box client: list, start/stop and connect to your Dev Boxes with Entra ID",
   "main": "src/main.js",
   "license": "MIT",
   "author": {
@@ -15,6 +15,7 @@
   },
   "scripts": {
     "start": "electron .",
+    "icon": "electron scripts/render-icon.js",
     "dist": "electron-builder --linux deb --publish never",
     "dist:linux": "electron-builder --linux deb --publish never",
     "dist:win": "electron-builder --win nsis --publish never"
@@ -26,9 +27,20 @@
       "target": [
         "deb"
       ],
-      "category": "Network"
+      "icon": "build/icon.png",
+      "category": "Network",
+      "desktop": {
+        "entry": {
+          "Keywords": "devbox;rdp;remote;desktop;azure;"
+        }
+      }
     },
     "deb": {
+      "synopsis": "Microsoft Dev Box client (Entra ID + FreeRDP)",
+      "description": "Lists your Microsoft Dev Boxes, starts and stops them, and connects to them with FreeRDP 3 - signed in with your organization's Entra ID account, with no tenant admin rights or app registration needed.",
+      "fpm": [
+        "build/local.devbox.client.metainfo.xml=/usr/share/metainfo/local.devbox.client.metainfo.xml"
+      ],
       "depends": [
         "libgtk-3-0",
         "libnotify4",
@@ -45,11 +57,13 @@
     "win": {
       "target": [
         "nsis"
-      ]
+      ],
+      "icon": "build/icon.png"
     },
     "nsis": {
       "oneClick": false,
-      "allowToChangeInstallationDirectory": true
+      "allowToChangeInstallationDirectory": true,
+      "installerSidebar": "build/installerSidebar.bmp"
     }
   },
   "dependencies": {

@@ -1,9 +1,20 @@
-# Dev Box client
+# <img src="build/icon.svg" width="28" alt=""> Dev Box client
 
 Electron app that lists your Microsoft Dev Boxes, starts/stops them, and connects
 using Entra ID, with no tenant admin rights or app registration needed. On Linux it
 connects with FreeRDP 3; on Windows it hands the session to the Remote Desktop
 client (`msrdc.exe`) or the Windows App (`ms-avd:` URI).
+
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/main-dark.png">
+    <img src="docs/main-light.png" width="390" alt="Your Dev Boxes, with start/stop/connect actions">
+  </picture>
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/session-dark.png">
+    <img src="docs/session-light.png" width="390" alt="In Session Settings: device redirection before connecting">
+  </picture>
+</p>
 
 ```
 sudo apt install freerdp3-sdl     # Linux: native Wayland client; freerdp3-x11 also works on X11

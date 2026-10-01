@@ -37,6 +37,8 @@ function createWindow() {
     minWidth: 420,
     minHeight: 480,
     title: 'Dev Box',
+    // Dev runs only: packaged builds get the icon from electron-builder (build/ is not packaged).
+    icon: [path.join(__dirname, '..', 'build', 'icon.png')].find(fs.existsSync),
     autoHideMenuBar: true,
     backgroundColor: '#1b1b1f',
     webPreferences: {

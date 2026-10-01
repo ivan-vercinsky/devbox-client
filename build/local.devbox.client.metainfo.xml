@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- AppStream metadata: gives the app a rich description and screenshots in
+     software centers (GNOME Software, KDE Discover). Installed into the .deb
+     at /usr/share/metainfo via deb.fpm in package.json. -->
+<component type="desktop-application">
+  <id>local.devbox.client</id>
+  <metadata_license>MIT</metadata_license>
+  <project_license>MIT</project_license>
+  <name>Dev Box</name>
+  <summary>Connect to your Microsoft Dev Box with Entra ID and FreeRDP</summary>
+  <description>
+    <p>
+      Lists your Microsoft Dev Boxes, starts and stops them, and connects to them
+      with FreeRDP 3 — signed in with your organization's Entra ID account, with
+      no tenant admin rights or app registration needed.
+    </p>
+    <p>
+      Device redirection (clipboard, drives, audio, USB passthrough, smart cards)
+      is configurable per connection, and a built-in diagnostics log shows every
+      HTTP call and the FreeRDP output when something fails. The Windows 365 web
+      client is available as a fallback.
+    </p>
+  </description>
+  <launchable type="desktop-id">devbox-client.desktop</launchable>
+  <url type="homepage">https://github.com/ivan-vercinsky/devbox-client</url>
+  <url type="bugtracker">https://github.com/ivan-vercinsky/devbox-client/issues</url>
+  <developer id="io.github.ivan-vercinsky">
+    <name>Ivan</name>
+  </developer>
+  <screenshots>
+    <screenshot type="default">
+      <caption>Your Dev Boxes, with start, stop and connect actions</caption>
+      <image>https://raw.githubusercontent.com/ivan-vercinsky/devbox-client/main/docs/main-light.png</image>
+    </screenshot>
+    <screenshot>
+      <caption>Choosing which local devices the Dev Box can use</caption>
+      <image>https://raw.githubusercontent.com/ivan-vercinsky/devbox-client/main/docs/session-light.png</image>
+    </screenshot>
+  </screenshots>
+  <categories>
+    <category>Network</category>
+    <category>RemoteAccess</category>
+  </categories>
+  <keywords>
+    <keyword>devbox</keyword>
+    <keyword>rdp</keyword>
+    <keyword>remote desktop</keyword>
+    <keyword>azure</keyword>
+  </keywords>
+  <content_rating type="oars-1.1"/>
+  <releases>
+    <release version="0.1.0" date="2026-10-01"/>
+  </releases>
+</component>
