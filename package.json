@@ -15,9 +15,9 @@
   },
   "scripts": {
     "start": "electron .",
-    "dist": "electron-builder --linux deb",
-    "dist:linux": "electron-builder --linux deb",
-    "dist:win": "electron-builder --win nsis"
+    "dist": "electron-builder --linux deb --publish never",
+    "dist:linux": "electron-builder --linux deb --publish never",
+    "dist:win": "electron-builder --win nsis --publish never"
   },
   "build": {
     "appId": "local.devbox.client",
