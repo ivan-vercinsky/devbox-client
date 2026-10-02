@@ -155,10 +155,17 @@ function connect(key, rdpFile, { parent, title, blocked = [] } = {}) {
 
   const found = findFreeRdp();
   if (!found) throw new Error('FreeRDP 3 not found. Install it with: sudo apt install freerdp3-sdl');
+  if (process.env.XDG_SESSION_TYPE === 'wayland' && found.bin.includes('xfreerdp'))
+    log.warn(
+      `rdp: ${found.bin} is an X11 client running under XWayland, where clipboard and the ` +
+        'Ctrl+Alt+Enter fullscreen toggle are unreliable (window can end up invisible). ' +
+        'Clear the FreeRDP binary setting to auto-detect sdl-freerdp3 instead.',
+    );
   const args = [
     rdpFile,
-    // Floating toolbar (minimize / restore / close) whenever the session is full screen;
-    // Ctrl+Alt+Enter toggles full screen.
+    // Floating toolbar (minimize / restore / close) whenever the session is full screen
+    // (xfreerdp only). Fullscreen toggle: Ctrl+Alt+Enter in xfreerdp, Right Shift+Enter
+    // in sdl-freerdp.
     '/floatbar:sticky:off,default:visible,show:fullscreen',
     // Surface clipboard, drive and USB redirection activity in Diagnostics.
     '/log-filters:com.freerdp.channels.cliprdr.client:DEBUG,com.freerdp.channels.rdpdr.client:DEBUG,com.freerdp.channels.drive.client:DEBUG,com.freerdp.channels.urbdrc.client:DEBUG,com.freerdp.channels.drdynvc.client:DEBUG',

@@ -59,7 +59,7 @@
           <input name="devCenterEndpoints" placeholder="https://<tenant>-<devcenter>.<region>.devcenter.azure.com" /></label>
         <label>Dev Center API version<input name="devCenterApiVersion" /></label>
         <label class="check"><input type="checkbox" name="sessionPrompt" /> Show session settings before connecting</label>
-        <label>FreeRDP binary <small>(Linux; empty = auto-detect)</small><input name="freerdpPath" placeholder="xfreerdp3" /></label>
+        <label>FreeRDP binary <small>(Linux; empty = auto-detect, recommended)</small><input name="freerdpPath" placeholder="sdl-freerdp3" /></label>
         <label>FreeRDP extra arguments<input name="freerdpArgs" /></label>
         <label>msrdc.exe path <small>(Windows; empty = auto-detect)</small><input name="msrdcPath" placeholder="C:\Program Files\Remote Desktop\msrdc.exe" /></label>
         <details>
@@ -113,7 +113,7 @@
           </select>
         </div>
         <label class="row"><span>Keyboard shortcuts <small class="muted">(Alt+Tab etc. go to the Dev Box)</small></span><input type="checkbox" class="switch" name="keyboardShortcuts" /></label>
-        <label class="row"><span>Full screen <small class="muted">(Ctrl+Alt+Enter toggles)</small></span><input type="checkbox" class="switch" name="fullscreen" /></label>
+        <label class="row"><span>Full screen <small class="muted" id="fs-hint">(Ctrl+Alt+Enter toggles)</small></span><input type="checkbox" class="switch" name="fullscreen" /></label>
         <label class="row"><span>Multiple displays</span><input type="checkbox" class="switch" name="multimon" /></label>
         <div class="dialog-actions">
           <label class="check small"><input type="checkbox" name="dontShow" /> Don't show again</label>

@@ -7,6 +7,7 @@ const state = {
   sessions: {}, // key -> 'preparing' | 'connecting' | 'connected'
   pending: {}, // key -> { verb, expect: [powerStates], until, connectAfter }
   loading: false,
+  client: null, // detected RDP client, from api.init()
 };
 
 const keyOf = (b) => `${b.projectName}/${b.name}`;
@@ -234,6 +235,15 @@ function sessionDialog(values, mode, box) {
     el.closest('label, .row').querySelector('.na')?.remove();
   }
   form.elements.dontShow.checked = !values.sessionPrompt;
+  // The fullscreen toggle key differs per client: Ctrl+Alt+Enter in xfreerdp,
+  // Right Shift+Enter in sdl-freerdp, Ctrl+Alt+Break in the Windows clients.
+  const bin = values.freerdpPath || state.client?.bin || '';
+  $('fs-hint').textContent =
+    state.client && state.client.kind !== 'freerdp'
+      ? '(Ctrl+Alt+Break toggles)'
+      : bin.includes('sdl')
+        ? '(Right Shift+Enter toggles)'
+        : '(Ctrl+Alt+Enter toggles)';
   $('session-go').textContent = mode === 'connect' ? 'Connect' : 'Save';
   $('session-status').textContent = 'Checking what your organization allows…';
   const usb = usbPicker(values.session.usbDevices || []);
@@ -413,6 +423,7 @@ document.addEventListener('click', () => document.querySelectorAll('.menu-items'
   for (const e of await api.logHistory()) appendLog(e);
   const info = await run(() => api.init());
   state.account = info?.account || null;
+  state.client = info?.freerdp || null;
   render();
   if (!info?.freerdp)
     showError(
