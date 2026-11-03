@@ -24,6 +24,17 @@ npm run dist:linux   # build a .deb into dist/
 npm run dist:win     # build a Windows NSIS installer into dist/ (run on Windows)
 ```
 
+### Building an RPM package (Fedora / RHEL)
+
+```
+sudo dnf install freerdp libxcrypt-compat
+npm install
+npm run dist:rpm     # build a .rpm into dist/
+```
+
+`freerdp` is the runtime dependency; `libxcrypt-compat` provides `libcrypt.so.1`
+required by the bundled fpm binary that electron-builder uses to assemble the package.
+
 ## How it works
 
 | Step | What | Auth (borrowed first-party public client) |

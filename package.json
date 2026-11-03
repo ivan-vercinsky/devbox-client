@@ -18,6 +18,7 @@
     "icon": "electron scripts/render-icon.js",
     "dist": "electron-builder --linux deb --publish never",
     "dist:linux": "electron-builder --linux deb --publish never",
+    "dist:rpm": "electron-builder --linux rpm --publish never",
     "dist:win": "electron-builder --win nsis --publish never"
   },
   "build": {
@@ -52,6 +53,25 @@
         "libuuid1",
         "libsecret-1-0",
         "freerdp3-sdl | freerdp3-x11"
+      ]
+    },
+    "rpm": {
+      "synopsis": "Microsoft Dev Box client (Entra ID + FreeRDP)",
+      "description": "Lists your Microsoft Dev Boxes, starts and stops them, and connects to them with FreeRDP 3 - signed in with your organization's Entra ID account, with no tenant admin rights or app registration needed.",
+      "fpm": [
+        "build/local.devbox.client.metainfo.xml=/usr/share/metainfo/local.devbox.client.metainfo.xml"
+      ],
+      "depends": [
+        "gtk3",
+        "libnotify",
+        "nss",
+        "libXScrnSaver",
+        "libXtst",
+        "xdg-utils",
+        "at-spi2-core",
+        "libuuid",
+        "libsecret",
+        "freerdp"
       ]
     },
     "win": {
