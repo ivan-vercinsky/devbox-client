@@ -235,15 +235,12 @@ function sessionDialog(values, mode, box) {
     el.closest('label, .row').querySelector('.na')?.remove();
   }
   form.elements.dontShow.checked = !values.sessionPrompt;
-  // The fullscreen toggle key differs per client: Ctrl+Alt+Enter in xfreerdp,
-  // Right Shift+Enter in sdl-freerdp, Ctrl+Alt+Break in the Windows clients.
+  // The fullscreen toggle key differs per client: Ctrl+Alt+Enter in xfreerdp, the
+  // configurable hotkey modifier+Enter in sdl-freerdp, Ctrl+Alt+Break on Windows.
   const bin = values.freerdpPath || state.client?.bin || '';
-  $('fs-hint').textContent =
-    state.client && state.client.kind !== 'freerdp'
-      ? '(Ctrl+Alt+Break toggles)'
-      : bin.includes('sdl')
-        ? '(Right Shift+Enter toggles)'
-        : '(Ctrl+Alt+Enter toggles)';
+  if (state.client && state.client.kind !== 'freerdp') $('fs-hint').textContent = '(Ctrl+Alt+Break toggles)';
+  else if (!bin.includes('sdl')) $('fs-hint').textContent = '(Ctrl+Alt+Enter toggles)';
+  else api.getSdlHotkeyMod().then((mod) => ($('fs-hint').textContent = sdlFullscreenHint(mod)));
   $('session-go').textContent = mode === 'connect' ? 'Connect' : 'Save';
   $('session-status').textContent = 'Checking what your organization allows…';
   const usb = usbPicker(values.session.usbDevices || []);
@@ -383,19 +380,42 @@ function fillSettings(values) {
     else input.value = values[input.name] ?? '';
   }
 }
+
+// The session hotkey modifier lives in sdl-freerdp's own config file, not in
+// the app's settings.json, so it is read and saved through its own channel.
+const SDL_MOD_LABELS = { KMOD_RSHIFT: 'Right Shift', KMOD_RCTRL: 'Right Ctrl', 'KMOD_LCTRL,KMOD_LALT': 'Left Ctrl+Alt' };
+const sdlFullscreenHint = (mod) =>
+  mod === 'KMOD_NONE'
+    ? '(toggle disabled in Settings)'
+    : `(${SDL_MOD_LABELS[mod] || mod.replaceAll('KMOD_', '').replaceAll(',', '+')}+Enter toggles)`;
+const sdlHotkeySelect = () => $('settings-form').elements.sdlHotkeyMod;
+async function fillSdlHotkeyMod() {
+  const mod = await api.getSdlHotkeyMod();
+  $('sdl-hotkey-row').hidden = mod === null; // Windows clients have no configurable hotkeys
+  if (mod === null) return;
+  const sel = sdlHotkeySelect();
+  if (![...sel.options].some((o) => o.value === mod)) sel.add(new Option(mod, mod)); // hand-edited mask
+  sel.value = mod;
+}
+
 $('open-settings').onclick = async () => {
   const s = await api.getSettings();
   defaults = s.defaults;
   fillSettings(s.values);
+  await fillSdlHotkeyMod();
   $('settings').showModal();
 };
-$('reset-settings').onclick = () => fillSettings(defaults);
+$('reset-settings').onclick = () => {
+  fillSettings(defaults);
+  if (!$('sdl-hotkey-row').hidden) sdlHotkeySelect().value = 'KMOD_RSHIFT';
+};
 $('settings').addEventListener('close', async () => {
   if ($('settings').returnValue !== 'save') return;
   const values = Object.fromEntries(
     [...$('settings-form').querySelectorAll('input')].map((i) => [i.name, i.type === 'checkbox' ? i.checked : i.value.trim()]),
   );
   await run(() => api.saveSettings(values));
+  if (!$('sdl-hotkey-row').hidden) await run(() => api.setSdlHotkeyMod(sdlHotkeySelect().value));
   refresh();
 });
 

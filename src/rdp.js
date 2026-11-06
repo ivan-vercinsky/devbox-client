@@ -6,6 +6,8 @@
 // We open that URL in our own sign-in window (sharing Entra SSO cookies, so it
 // usually completes invisibly) and feed the redirect back on stdin.
 const fs = require('fs');
+const os = require('os');
+const path = require('path');
 const { spawn, execFileSync } = require('child_process');
 const { EventEmitter } = require('events');
 const { dialog, shell } = require('electron');
@@ -137,6 +139,47 @@ function sessionArgs(o) {
     ...(o.fullscreen ? ['/f'] : []),
     o.keyboardShortcuts ? '+grab-keyboard' : '-grab-keyboard',
   ];
+}
+
+// sdl-freerdp's hotkeys (fullscreen, minimize, disconnect, grab) all require the
+// SDL_KeyModMask modifier from its per-user config file. The app manages only that
+// one key and leaves the rest of the file alone. KMOD_NONE disables the hotkeys.
+const SDL_HOTKEY_DEFAULT = 'KMOD_RSHIFT';
+const sdlPrefsFile = () =>
+  path.join(process.env.XDG_CONFIG_HOME || path.join(os.homedir(), '.config'), 'freerdp', 'sdl-freerdp.json');
+
+function readSdlPrefs() {
+  let text;
+  try {
+    text = fs.readFileSync(sdlPrefsFile(), 'utf8');
+  } catch {
+    return {};
+  }
+  return JSON.parse(text); // a corrupt file throws - never silently overwrite it
+}
+
+function getSdlHotkeyMod() {
+  if (IS_WIN) return null;
+  try {
+    const mask = readSdlPrefs().SDL_KeyModMask;
+    return Array.isArray(mask) && mask.length ? mask.join(',') : SDL_HOTKEY_DEFAULT;
+  } catch {
+    return SDL_HOTKEY_DEFAULT; // unreadable file; a save will surface the error
+  }
+}
+
+function setSdlHotkeyMod(mod) {
+  if (IS_WIN || !mod || mod === getSdlHotkeyMod()) return;
+  let prefs;
+  try {
+    prefs = readSdlPrefs();
+  } catch {
+    throw new Error(`${sdlPrefsFile()} is not valid JSON; fix or remove it first`);
+  }
+  prefs.SDL_KeyModMask = mod.split(',');
+  fs.mkdirSync(path.dirname(sdlPrefsFile()), { recursive: true });
+  fs.writeFileSync(sdlPrefsFile(), JSON.stringify(prefs, null, 2) + '\n');
+  log.info(`rdp: sdl-freerdp hotkey modifier set to ${mod}`);
 }
 
 const sessions = new Map(); // key -> child
@@ -307,4 +350,4 @@ function disconnectAll() {
   for (const c of sessions.values()) c.kill('SIGTERM');
 }
 
-module.exports = { connect, disconnect, disconnectAll, findFreeRdp, findClient, openWithWindowsApp, events, isConnected: (k) => sessions.has(k), applySessionToRdp, sessionArgs, rdpCapabilities };
+module.exports = { connect, disconnect, disconnectAll, findFreeRdp, findClient, openWithWindowsApp, events, isConnected: (k) => sessions.has(k), applySessionToRdp, sessionArgs, rdpCapabilities, getSdlHotkeyMod, setSdlHotkeyMod };

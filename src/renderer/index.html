@@ -61,6 +61,13 @@
         <label class="check"><input type="checkbox" name="sessionPrompt" /> Show session settings before connecting</label>
         <label>FreeRDP binary <small>(Linux; empty = auto-detect, recommended)</small><input name="freerdpPath" placeholder="sdl-freerdp3" /></label>
         <label>FreeRDP extra arguments<input name="freerdpArgs" /></label>
+        <label id="sdl-hotkey-row">Session hotkey modifier <small>(sdl-freerdp; +Enter = full screen, +M/D/G = minimize/disconnect/release keyboard. xfreerdp is fixed to Ctrl+Alt)</small>
+          <select name="sdlHotkeyMod">
+            <option value="KMOD_RSHIFT">Right Shift (default)</option>
+            <option value="KMOD_RCTRL">Right Ctrl</option>
+            <option value="KMOD_LCTRL,KMOD_LALT">Left Ctrl+Left Alt</option>
+            <option value="KMOD_NONE">Disabled</option>
+          </select></label>
         <label>msrdc.exe path <small>(Windows; empty = auto-detect)</small><input name="msrdcPath" placeholder="C:\Program Files\Remote Desktop\msrdc.exe" /></label>
         <details>
           <summary>Advanced (auth clients &amp; feed)</summary>

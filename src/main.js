@@ -132,6 +132,8 @@ handle('devbox:openWeb', async (box, external = false) => {
 
 handle('settings:get', () => ({ values: settings.load(), defaults: settings.DEFAULTS }));
 handle('settings:save', (values) => settings.save(values));
+handle('rdp:getSdlHotkeyMod', () => rdp.getSdlHotkeyMod());
+handle('rdp:setSdlHotkeyMod', (mod) => rdp.setSdlHotkeyMod(mod));
 handle('log:history', () => log.history());
 
 log.subscribe((entry) => send('log:entry', entry));

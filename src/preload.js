@@ -21,6 +21,8 @@ contextBridge.exposeInMainWorld('devbox', {
   openWeb: (box, external = false) => call('devbox:openWeb', box, external),
   getSettings: () => call('settings:get'),
   saveSettings: (values) => call('settings:save', values),
+  getSdlHotkeyMod: () => call('rdp:getSdlHotkeyMod'),
+  setSdlHotkeyMod: (mod) => call('rdp:setSdlHotkeyMod', mod),
   logHistory: () => call('log:history'),
   onLog: (fn) => ipcRenderer.on('log:entry', (_e, entry) => fn(entry)),
   onRdpState: (fn) => ipcRenderer.on('rdp:state', (_e, s) => fn(s)),
