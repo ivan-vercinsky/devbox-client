@@ -444,6 +444,10 @@ document.addEventListener('click', () => document.querySelectorAll('.menu-items'
   const info = await run(() => api.init());
   state.account = info?.account || null;
   state.client = info?.freerdp || null;
+  if (info?.version) {
+    $('app-version').textContent = `v${info.version}`;
+    document.title = `Dev Box ${info.version}`;
+  }
   render();
   if (!info?.freerdp)
     showError(

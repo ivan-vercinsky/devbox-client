@@ -56,11 +56,12 @@ function createWindow() {
 }
 
 handle('app:init', async () => {
+  log.info(`app: Dev Box ${app.getVersion()}`);
   const client = rdp.findClient();
   if (client) log.info(`rdp: using ${client.bin || client.kind}${client.version ? ` ${client.version}` : ''}`);
   else if (process.platform === 'win32') log.warn('rdp: no Remote Desktop client found (install "Windows App" from the Microsoft Store)');
   else log.warn('rdp: FreeRDP 3 not found (sudo apt install freerdp3-x11)');
-  return { account: await auth.currentAccount(), freerdp: client, platform: process.platform };
+  return { account: await auth.currentAccount(), freerdp: client, platform: process.platform, version: app.getVersion() };
 });
 
 handle('auth:signIn', () => auth.signIn(win));
